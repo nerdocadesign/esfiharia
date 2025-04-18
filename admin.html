@@ -3,18 +3,366 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Editar Produtos</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Administração Esfiharia Delivery</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    .titulo {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 24px;
+      color: #333;
+    }
+
+    h2 {
+      margin-top: 20px;
+      color: #444;
+      font-size: 18px;
+    }
+
+    .input-field {
+      flex: 1;
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin: 8px 0;
+    }
+
+    .input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    .btn-adicionar-categoria {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover,
+    .btn-adicionar-categoria:hover {
+      background-color: #218838;
+    }
+
+    .btn.remove {
+      background-color: #dc3545;
+    }
+
+    .btn.remove:hover {
+      background-color: #c82333;
+    }
+
+    .btn.edit {
+      background-color: #ffc107;
+      color: #333;
+    }
+
+    .btn.edit:hover {
+      background-color: #e0a800;
+    }
+
+    .lista {
+      margin-top: 15px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      margin-bottom: 8px;
+    }
+
+    .item-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tabela-wrapper {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    .tabela-produtos {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .tabela-produtos th,
+    .tabela-produtos td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .tabela-produtos th {
+      background-color: #f0f0f0;
+      font-weight: bold;
+    }
+
+    .tabela-produtos td .btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      margin-right: 4px;
+    }
+
+    @media (max-width: 500px) {
+      .input-field {
+        font-size: 12px;
+      }
+
+      .btn,
+      .btn-adicionar-categoria {
+        font-size: 12px;
+      }
+
+      .tabela-produtos th,
+      .tabela-produtos td {
+        font-size: 12px;
+        padding: 6px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Administração de Produtos</h1>
-  <form id="produtoForm">
-    <input type="text" id="nome" placeholder="Nome do produto" required />
-    <input type="text" id="categoria" placeholder="Categoria (salgadas, doces, bebidas)" required />
-    <button type="submit">Adicionar Produto</button>
-  </form>
-  <div id="listaProdutos" class="produtos"></div>
+  <div class="container">
+    <h1 class="titulo">Administração Esfiharia Delivery</h1>
 
-  <script src="admin.js"></script>
+    <h2>Editar Informações do Header</h2>
+    <div class="input-container">
+      <input type="text" id="inputNomeEsfiharia" class="input-field" placeholder="Nome da Esfiharia">
+      <input type="text" id="inputImagemHeader" class="input-field" placeholder="URL da imagem do header">
+      <button class="btn-adicionar-categoria" id="btnSalvarHeader">Salvar Header</button>
+    </div>
+
+    <div>
+      <h2>Gerenciar Categorias</h2>
+      <div class="input-container">
+        <input type="text" id="inputCategoria" class="input-field" placeholder="Adicionar nova categoria">
+        <button class="btn btn-adicionar-categoria" id="btnAdicionarCategoria">Adicionar Categoria</button>
+      </div>
+      <div id="listaCategorias" class="lista"></div>
+    </div>
+
+    <div>
+      <h2>Gerenciar Produtos</h2>
+      <input type="text" id="inputProduto" class="input-field" placeholder="Nome do produto">
+      <input type="number" id="inputPreco" class="input-field" placeholder="Preço do produto">
+      <select id="selectCategoriaProduto" class="input-field">
+        <option value="">Selecione uma categoria</option>
+      </select>
+      <button class="btn" id="btnAdicionarProduto">Adicionar Produto</button>
+
+      <div class="tabela-wrapper">
+        <table class="tabela-produtos" id="tabelaProdutos">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Preço</th>
+              <th>Categoria</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="listaProdutos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2>Editar Texto dos Botões</h2>
+      <input type="text" id="inputTextoBotao" class="input-field" placeholder="Texto do botão 'Meu Pedido'">
+      <button class="btn" id="btnSalvarTextoBotao">Salvar Texto</button>
+    </div>
+  </div>
+
+  <script>
+    let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
+    let produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+    let textoBotao = localStorage.getItem('textoBotao') || 'Meu Pedido';
+
+    function atualizarCategorias() {
+      const listaCategorias = document.getElementById('listaCategorias');
+      listaCategorias.innerHTML = '';
+      categorias.forEach((categoria, index) => {
+        const item = document.createElement('div');
+        item.classList.add('item');
+        item.innerHTML = `
+          <div>${categoria}</div>
+          <div class="item-buttons">
+            <button class="btn remove" onclick="removerCategoria(${index})">Remover</button>
+          </div>
+        `;
+        listaCategorias.appendChild(item);
+      });
+      carregarCategoriasNoDropdown();
+    }
+
+    function atualizarProdutos() {
+      const listaProdutos = document.getElementById('listaProdutos');
+      listaProdutos.innerHTML = '';
+      produtos.forEach((produto, index) => {
+        const row = document.createElement('tr');
+        row.id = `produto-${index}`;
+        row.innerHTML = `
+          <td>${produto.nome}</td>
+          <td>R$ ${produto.preco}</td>
+          <td>${produto.categoria}</td>
+          <td>
+            <button class="btn edit" onclick="editarProduto(${index})">Editar</button>
+            <button class="btn remove" onclick="removerProduto(${index})">Remover</button>
+          </td>
+        `;
+        listaProdutos.appendChild(row);
+      });
+    }
+
+    function adicionarCategoria() {
+      const categoria = document.getElementById('inputCategoria').value.trim();
+      if (categoria && !categorias.includes(categoria)) {
+        categorias.push(categoria);
+        localStorage.setItem('categorias', JSON.stringify(categorias));
+        document.getElementById('inputCategoria').value = '';
+        atualizarCategorias();
+      }
+    }
+
+    function removerCategoria(index) {
+      categorias.splice(index, 1);
+      localStorage.setItem('categorias', JSON.stringify(categorias));
+      atualizarCategorias();
+    }
+
+    function adicionarProduto() {
+      const nome = document.getElementById('inputProduto').value.trim();
+      const preco = document.getElementById('inputPreco').value.trim();
+      const categoria = document.getElementById('selectCategoriaProduto').value;
+      if (nome && preco && categoria) {
+        produtos.push({ nome, preco, categoria });
+        localStorage.setItem('produtos', JSON.stringify(produtos));
+        document.getElementById('inputProduto').value = '';
+        document.getElementById('inputPreco').value = '';
+        atualizarProdutos();
+      }
+    }
+
+    function removerProduto(index) {
+      produtos.splice(index, 1);
+      localStorage.setItem('produtos', JSON.stringify(produtos));
+      atualizarProdutos();
+    }
+
+    function editarProduto(index) {
+      const produto = produtos[index];
+      const row = document.getElementById(`produto-${index}`);
+
+      row.innerHTML = '';
+
+      const nomeInput = document.createElement('input');
+      nomeInput.value = produto.nome;
+      nomeInput.classList.add('input-field');
+
+      const precoInput = document.createElement('input');
+      precoInput.type = 'number';
+      precoInput.value = produto.preco;
+      precoInput.classList.add('input-field');
+
+      const categoriaSelect = document.createElement('select');
+      categoriaSelect.classList.add('input-field');
+      categorias.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        option.textContent = cat;
+        if (cat === produto.categoria) option.selected = true;
+        categoriaSelect.appendChild(option);
+      });
+
+      const salvarBtn = document.createElement('button');
+      salvarBtn.textContent = 'Salvar';
+      salvarBtn.classList.add('btn');
+      salvarBtn.onclick = () => {
+        produtos[index] = {
+          nome: nomeInput.value.trim(),
+          preco: precoInput.value.trim(),
+          categoria: categoriaSelect.value
+        };
+        localStorage.setItem('produtos', JSON.stringify(produtos));
+        atualizarProdutos();
+      };
+
+      const td = document.createElement('td');
+      td.colSpan = 4;
+      td.appendChild(nomeInput);
+      td.appendChild(precoInput);
+      td.appendChild(categoriaSelect);
+      td.appendChild(salvarBtn);
+
+      const newRow = document.createElement('tr');
+      newRow.appendChild(td);
+      row.replaceWith(newRow);
+    }
+
+    function salvarTextoBotao() {
+      const texto = document.getElementById('inputTextoBotao').value.trim();
+      if (texto) {
+        localStorage.setItem('textoBotao', texto);
+        alert('Texto do botão "Meu Pedido" atualizado!');
+      }
+    }
+
+    function carregarCategoriasNoDropdown() {
+      const select = document.getElementById('selectCategoriaProduto');
+      select.innerHTML = '<option value="">Selecione uma categoria</option>';
+      categorias.forEach(categoria => {
+        const option = document.createElement('option');
+        option.value = categoria;
+        option.textContent = categoria;
+        select.appendChild(option);
+      });
+    }
+
+    document.getElementById('btnAdicionarCategoria').addEventListener('click', adicionarCategoria);
+    document.getElementById('btnAdicionarProduto').addEventListener('click', adicionarProduto);
+    document.getElementById('btnSalvarTextoBotao').addEventListener('click', salvarTextoBotao);
+    document.getElementById('btnSalvarHeader').addEventListener('click', () => {
+      const nome = document.getElementById('inputNomeEsfiharia').value;
+      const imagem = document.getElementById('inputImagemHeader').value;
+      localStorage.setItem('headerEsfiharia', JSON.stringify({ nome, imagem }));
+      alert('Informações do header salvas!');
+    });
+
+    atualizarCategorias();
+    atualizarProdutos();
+    carregarCategoriasNoDropdown();
+  </script>
 </body>
 </html>
