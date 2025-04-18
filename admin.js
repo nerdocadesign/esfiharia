@@ -1,37 +1,38 @@
-let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+// Função para salvar os dados no localStorage
+function salvarProduto() {
+  const nome = document.getElementById('produto-nome').value;
+  const preco = document.getElementById('produto-preco').value;
+  const descricao = document.getElementById('produto-descricao').value;
 
-function salvarProdutos() {
-  localStorage.setItem("produtos", JSON.stringify(produtos));
-  renderLista();
+  const produto = {
+    nome,
+    preco,
+    descricao
+  };
+
+  // Armazenar no localStorage (você pode usar um objeto com múltiplos produtos)
+  localStorage.setItem('produto', JSON.stringify(produto));
+
+  alert('Produto salvo com sucesso!');
 }
 
-document.getElementById("produtoForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const nome = document.getElementById("nome").value.trim();
-  const categoria = document.getElementById("categoria").value.trim().toLowerCase();
-  if (!nome || !categoria) return;
-  produtos.push({ nome, categoria });
-  salvarProdutos();
-  e.target.reset();
-});
-
-function removerProduto(index) {
-  produtos.splice(index, 1);
-  salvarProdutos();
+// Função para limpar os dados do formulário
+function limparDados() {
+  document.getElementById('produto-nome').value = '';
+  document.getElementById('produto-preco').value = '';
+  document.getElementById('produto-descricao').value = '';
 }
 
-function renderLista() {
-  const lista = document.getElementById("listaProdutos");
-  lista.innerHTML = "";
-  produtos.forEach((p, i) => {
-    const div = document.createElement("div");
-    div.className = "produto";
-    div.innerHTML = `
-      <strong>${p.nome}</strong> (${p.categoria})
-      <button onclick="removerProduto(${i})">Remover</button>
-    `;
-    lista.appendChild(div);
-  });
+// Função para carregar os dados do localStorage
+function carregarDados() {
+  const produto = JSON.parse(localStorage.getItem('produto'));
+
+  if (produto) {
+    document.getElementById('produto-nome').value = produto.nome;
+    document.getElementById('produto-preco').value = produto.preco;
+    document.getElementById('produto-descricao').value = produto.descricao;
+  }
 }
 
-renderLista();
+// Carregar os dados ao carregar a página
+window.onload = carregarDados;
