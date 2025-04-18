@@ -3,22 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pedido Rápido</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Esfiharia Delivery</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .active { background-color: #28a745; color: white; }
+  </style>
 </head>
 <body>
-  <h1>Faça seu Pedido</h1>
-  <div class="filtros">
-    <button onclick="filtrarCategoria('todas')">Todos</button>
-    <button onclick="filtrarCategoria('salgadas')">Salgadas</button>
-    <button onclick="filtrarCategoria('doces')">Doces</button>
-    <button onclick="filtrarCategoria('bebidas')">Bebidas</button>
-    <button onclick="filtrarCategoria('pedido')">Meu Pedido</button>
-  </div>
-  <div id="produtos" class="produtos"></div>
-  <div id="mensagem-vazia" class="mensagem-vazia">Nenhum produto selecionado</div>
-  <button id="enviarPedido" onclick="enviarPedido()">Enviar Pedido via WhatsApp</button>
+  <div class="container">
+    <header class="header-esfiharia">
+      <div class="banner-foto">
+        <img src="https://cozinhandodiferente.com.br/wp-content/uploads/2024/09/esfiha-aberta-receita-500x500.jpg" alt="Esfihas deliciosas" class="foto-esfihas">
+        <h1 class="nome-esfiharia">Delysfiha Delivery</h1>
+      </div>
+    </header>
 
-  <script src="script.js"></script>
+    <div class="top-info">
+      <input type="text" id="nomeCliente" placeholder="Seu nome" required />
+      <input type="text" id="enderecoCliente" placeholder="Endereço completo (opcional)" />
+      <textarea id="observacoes" rows="2" placeholder="Observações (ex: sem cebola, bem passado...)"></textarea>
+    </div>
+
+    <div id="filtros" class="filtros">
+      <button id="todosBtn" class="active">Meu Pedido</button>
+      <!-- Botões de categoria serão adicionados dinamicamente -->
+    </div>
+
+    <div class="product-list" id="productList"></div>
+
+    <div id="mensagemNenhumProduto" style="display:none; text-align:center; padding:20px; color:#888; font-style:italic;">
+      Nenhum produto selecionado ainda.
+    </div>
+
+    <div class="resumo-container">
+      <div class="resumo" id="resumoPedido">Total: R$0.00 – 0 itens</div>
+      <button class="finalizar" onclick="enviarPedido()">Enviar Pedido</button>
+    </div>
+  </div>
+
+  <script>
+  // **Variáveis Iniciais**
+let categorias = JSON.parse(localStorage.getItem('categorias')) || [];
+let produtos = JSON.parse(localStorage.getItem('produtos')) || [];
+let textoBotao = localStorage.getItem('textoBotao') || 'Meu Pedido';
+
+const filtros = document.getElementById('filtros');
+const todosBtn = document.getElementById('todosBtn');
+const productList = document.getElementById('productList');
+const resumoPedido = document.getElementById('resumoPedido');
+const mensagemNenhumProduto = document.getElementById('mensagemNenhumProduto');
+
+let selecionados = [];
+
+// **Atualização do Texto do Botão Principal**
+todosBtn.textContent = textoBotao;
+
+// **Criação dos Botões de Categoria**
+categorias.forEach(cat => {
+  const btn = document.createElement('button');
+  btn.textContent = cat;
+  btn.addEventListener('click', () => filtrarPorCategoria(cat, btn));
+  filtros.appendChild(btn);
+});
+
+// **Função para Filtrar Produtos por Categoria**
+function filtrarPorCategoria(categoria, btnClicado) {
+  document.querySelectorAll('#filtros button').forEach(btn => btn.classList.remove('active'));
+  btnClicado.classList.add('active');
+  exibirProdutos(produtos.filter(p => p.categoria === categoria));
+}
+
+// **Evento de Clique no Botão "Meu Pedido" (Exibir Produtos Selecionados)**
+todosBtn.addEventListener('click', () => {
+  document.querySelectorAll('#filtros button').forEach(btn => btn.classList.remove('active'));
+  todosBtn.classList.add('active');
+  exibirProdutos(selecionados);
+});
+
+// **Função para Exibir os Produtos**
+function exibirProdutos(lista) {
+  productList.innerHTML = ''; // Limpa a lista de produtos
+
+  if (lista.length === 0) {
+    mensagemNenhumProduto.style.display = 'block';
+    return;
+  } else {
+    mensagemNenhumProduto.style.display = 'none';
+  }
+
+  // Para cada produto, cria-se a estrutura HTML
+  lista.forEach(prod => {
+    const divProduto = document.createElement('div');
+    divProduto.className = 'produto';
+
+    // Criando a div 'produto-linha' e colocando dentro da div 'produto'
+    const divProdutoLinha = document.createElement('div');
+    divProdutoLinha.className = 'produto-linha';
+
+    // Criando os elementos manualmente para maior controle
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = selecionados.some(p => p.nome === prod.nome);
+    checkbox.addEventListener('change', () => alternarProduto(prod.nome));
+
+    const nome = document.createElement('span');
+    nome.textContent = ` ${prod.nome}`;
+
+    const preco = document.createElement('span');
+    preco.style.marginLeft = 'auto';
+    preco.textContent = `R$ ${parseFloat(prod.preco).toFixed(2)}`;
+
+    // Estrutura final: [☑️] Nome                     R$ XX,XX
+    divProdutoLinha.appendChild(checkbox);
+    divProdutoLinha.appendChild(nome);
+    divProdutoLinha.appendChild(preco);
+
+    // Adicionando à div 'produto' e depois à lista
+    divProduto.appendChild(divProdutoLinha);
+    productList.appendChild(divProduto);
+  });
+}
+
+
+// **Função para Alternar Seleção do Produto**
+function alternarProduto(nome) {
+  const prod = produtos.find(p => p.nome === nome);
+  const jaSelecionado = selecionados.some(p => p.nome === nome);
+  if (jaSelecionado) {
+    selecionados = selecionados.filter(p => p.nome !== nome);
+  } else {
+    selecionados.push(prod);
+  }
+  atualizarResumo();
+  const btnAtivo = document.querySelector('#filtros button.active');
+  if (btnAtivo === todosBtn) exibirProdutos(selecionados);
+}
+
+// **Função para Atualizar o Resumo do Pedido**
+function atualizarResumo() {
+  let total = selecionados.reduce((soma, p) => soma + parseFloat(p.preco), 0);
+  resumoPedido.textContent = `Total: R$ ${total.toFixed(2)} – ${selecionados.length} itens`;
+}
+
+// **Função para Enviar o Pedido via WhatsApp**
+function enviarPedido() {
+  const nome = document.getElementById('nomeCliente').value.trim();
+  if (!nome) return alert('Por favor, informe seu nome!');
+  let endereco = document.getElementById('enderecoCliente').value.trim();
+  let obs = document.getElementById('observacoes').value.trim();
+
+  let msg = `Olá, meu nome é ${nome}%0A`;
+  if (endereco) msg += `Endereço: ${endereco}%0A`;
+  if (obs) msg += `Observações: ${obs}%0A`;
+  msg += `%0AMeu pedido:%0A`;
+
+  selecionados.forEach(p => {
+    msg += `- ${p.nome} (R$ ${parseFloat(p.preco).toFixed(2)})%0A`;
+  });
+
+  let total = selecionados.reduce((soma, p) => soma + parseFloat(p.preco), 0);
+  msg += `%0ATotal: R$ ${total.toFixed(2)}`;
+
+  const link = `https://wa.me/SEUNUMERO?text=${msg}`;
+  window.open(link, '_blank');
+}
+
+// **Exibe os produtos selecionados por padrão**
+exibirProdutos(selecionados);
+
+// **Carregar dados do header da Esfiharia no carregamento da página**
+window.addEventListener('DOMContentLoaded', () => {
+  const headerData = JSON.parse(localStorage.getItem('headerEsfiharia'));
+  if (headerData) {
+    const titulo = document.querySelector('.nome-esfiharia');
+    const imagem = document.querySelector('.foto-esfihas');
+
+    if (titulo) titulo.textContent = headerData.nome || "Delysfiha Delivery";
+    if (imagem) imagem.src = headerData.imagem || "default.jpg";
+  } else {
+    document.querySelector('.nome-esfiharia').textContent = "Delysfiha Delivery";
+    document.querySelector('.foto-esfihas').src = "default.jpg";
+  }
+});
+
+  </script>
 </body>
 </html>
